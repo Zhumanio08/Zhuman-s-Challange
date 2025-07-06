@@ -618,11 +618,6 @@
     <script>
         // Данные активности (ЗДЕСЬ ВЫ МОЖЕТЕ РЕДАКТИРОВАТЬ ДАННЫЕ)
         const activityData = {
-            // Формат:
-            // 'YYYY-MM-DD': { 
-            //   hours: количество часов, 
-            //   activities: ["активность 1", "активность 2"] 
-            // }
             '2025-07-01': { 
                 hours: 4.83, 
                 activities: [
@@ -635,11 +630,10 @@
             '2025-07-02': { 
                 hours: 2.49, 
                 activities: [
-                    "Разборал 2 резолюции",
+                    "Разобрал 2 резолюции",
                     "Качал информативку"
                 ] 
             },
-
             '2025-07-03': { 
                 hours: 3.23, 
                 activities: [
@@ -647,8 +641,7 @@
                     "Разобрал резолюцию про национализм",
                     "Посмотрел финал WUDC 2016"
                 ] 
-
-             },
+            },
             '2025-07-04': { 
                 hours: 3.6, 
                 activities: [
@@ -662,53 +655,53 @@
                     "Посмотрел разбор Абдуллы",
                     "Таймкиперил раунд на турнире",
                     "Играл техтимой на турнире"
-                ]  
+                ] 
             },
-
+            '2025-07-06': { 
+                hours: 5.2, 
+                activities: [
+                    "Таймкиперил финал Lordaeron",
+                    "Винговал 1 раунд Lordaeron",
+                    "Сыграл турнир DebHub Practice",
+                    "Работал над векторным доказательством"
+                ] 
+            },
             '2025-07-07': { 
                 hours: 0, 
                 activities: [
-                    "none,
-                    "none"
+                    "День отдыха"
                 ] 
             },
             '2025-07-10': { 
                 hours: 0, 
                 activities: [
-                    "none",
-                    "none"
+                    "День отдыха"
                 ] 
             },
             '2025-07-15': { 
                 hours: 0, 
                 activities: [
-                    "none"
+                    "День отдыха"
                 ] 
             },
             '2025-07-20': { 
                 hours: 0, 
                 activities: [
-                    "none",
-                    "none"
+                    "День отдыха"
                 ] 
             },
             '2025-07-25': { 
                 hours: 0, 
                 activities: [
-                    "none",
-                    "none"
+                    "День отдыха"
                 ] 
             },
             '2025-07-31': { 
                 hours: 0, 
                 activities: [
-                    "none",
-                    "none"
+                    "День отдыха"
                 ] 
             }
-
-
-
         };
         
         // Текущая выбранная дата
@@ -719,7 +712,7 @@
             const calendarDays = document.getElementById('calendarDays');
             calendarDays.innerHTML = '';
             
-            // Июль 2025 начинается во вторник (1 = понедельник, 2 = вторник)
+            // Июль 2025 начинается во вторник (0 = воскресенье, 1 = понедельник, 2 = вторник)
             const startDay = 2;
             const daysInMonth = 31;
             
@@ -736,7 +729,9 @@
                 dayElement.className = 'day';
                 dayElement.textContent = day;
                 
-                const dateStr = `2025-07-${day < 10 ? '0' + day : day}`;
+                // Форматируем дату для ключа (добавляем ведущий ноль для дней < 10)
+                const formattedDay = day < 10 ? `0${day}` : day;
+                const dateStr = `2025-07-${formattedDay}`;
                 dayElement.dataset.date = dateStr;
                 
                 // Выделяем начальную и конечную даты
@@ -752,7 +747,7 @@
                 calendarDays.appendChild(dayElement);
             }
             
-            // Добавляем пустые дни в конце, чтобы завершить сетку
+            // Добавляем пустые дни в конце, чтобы завершить сетку (6 строк x 7 дней = 42 ячейки)
             const totalCells = 42;
             const totalDays = startDay - 1 + daysInMonth;
             for (let i = totalDays; i < totalCells; i++) {
@@ -782,7 +777,7 @@
             // Устанавливаем активность
             if (activityData[date]) {
                 const data = activityData[date];
-                timeDisplay.textContent = `${data.hours} ${getHoursWord(data.hours)}`;
+                timeDisplay.textContent = `${data.hours.toFixed(2)} ${getHoursWord(data.hours)}`;
                 activityList.innerHTML = '';
                 
                 data.activities.forEach(activity => {
@@ -850,6 +845,7 @@
                     activities: activities.length > 0 ? activities : ['День отдыха']
                 };
             } else {
+                // Если 0 часов и нет активностей, удаляем запись
                 delete activityData[currentDate];
             }
             
@@ -875,14 +871,32 @@
             
             // Обновляем отображение
             document.getElementById('totalTime').textContent = 
-                `${totalHours.toFixed(1)} ${getHoursWord(totalHours)}`;
+                `${totalHours.toFixed(2)} ${getHoursWord(totalHours)}`;
         }
         
         // Helper function to format hours correctly in Russian
         function getHoursWord(hours) {
-            if (hours === 1 || (hours > 1 && hours < 2)) return 'час';
-            if (hours > 1 && hours < 5) return 'часа';
-            return 'часов';
+            hours = parseFloat(hours);
+            if (isNaN(hours)) return 'часов';
+            
+            // Определяем последнюю цифру для правильного склонения
+            const lastDigit = Math.floor(hours) % 10;
+            const lastTwoDigits = Math.floor(hours) % 100;
+            
+            if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+                return 'часов';
+            }
+            
+            switch (lastDigit) {
+                case 1:
+                    return 'час';
+                case 2:
+                case 3:
+                case 4:
+                    return 'часа';
+                default:
+                    return 'часов';
+            }
         }
         
         // Инициализация событий
@@ -932,6 +946,7 @@
         function init() {
             generateCalendar();
             initEvents();
+            updateTotalTime(); // Обновляем счетчик при загрузке
         }
         
         // Запуск приложения
